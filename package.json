@@ -1,5 +1,23 @@
 {
   "name": "express-cli-ts",
+  "description": "一款用于提升工程效能的脚手架, 快速生成typescript + express项目",
+  "homepage": "github.com/ruofee/express-cli-ts#readme",
+  "author": {
+    "email": "ruofee@126.com",
+    "name": "ruofee",
+    "url": "http://ruofee.cn"
+  },
+  "keywords": [
+    "express",
+    "typescript",
+    "express-cli",
+    "nodejs",
+    "express-cli-ts"
+  ],
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/ruofee/express-cli-ts"
+  },
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
