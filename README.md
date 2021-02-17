@@ -11,12 +11,10 @@
 ```cmd
 # use yarn
 yarn global add express-cli-ts
-express-cli-ts
+express@cli init your_project
 # use npm
 npm i express-cli-ts --global
-express-cli-ts
-# use npx
-npx express-cli-ts
+express@cli init your_project
 ```
 
 ## 🚲 脚手架集成

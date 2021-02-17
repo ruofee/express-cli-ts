@@ -1,7 +1,7 @@
 {
   "name": "express-cli-ts",
   "version": "0.0.1",
-  "main": "./bin/cli.js",
+  "main": "./bin/cli.ts",
   "license": "MIT",
   "description": "一款用于提升工程效能的脚手架, 快速生成typescript + express项目",
   "homepage": "github.com/ruofee/express-cli-ts#readme",
@@ -26,8 +26,7 @@
     "express@cli": "./lib/cli.js"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "ts-node ./bin/cli.ts init ruofee-project"
+    "build": "tsc"
   },
   "dependencies": {
     "chalk": "^4.1.0",
