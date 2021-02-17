@@ -2,8 +2,9 @@ import {renderFile} from 'ejs';
 import chalk from 'chalk';
 import {resolve} from 'path';
 import inquirer from 'inquirer';
+import ora from 'ora';
 import {isFileExist, download, readDir, writeFileRecursive} from './utils';
-import { exec } from 'child_process';
+import {exec} from 'child_process';
 
 const answer = (projectName: string) => {
     return inquirer.prompt([
@@ -28,7 +29,7 @@ const answer = (projectName: string) => {
             choices: [
                 {name: '网络请求库(axios)', value: 'axios'},
                 {name: '路由(Express.Router)', value: 'routes'},
-                {name: '日志(winston)', value: 'log'},
+                {name: '日志(winston)', value: 'winston'},
                 {name: '单元测试(mocha + chai)', value: 'unitTest'},
             ]
         },
@@ -44,45 +45,53 @@ export default async (projectName: string) => {
         const answers = await answer(projectName);
         const downloadPath = './express-cli-ts-template';
         const saveAsPath = resolve(process.cwd(), downloadPath);
+        const loadingDownload = ora('正在下载模板').start();
         try {
             await download('ruofee/express-cli-ts#main', saveAsPath);
-            console.log(chalk.green('💪 成功下载模板'));
-            // const fileMap = (await import(resolve(saveAsPath, './packages/template/fileMap.js'))).default;
-            const fileMap: {[key: string]: string[]} = {
-                axios: ['./src/utils/http.ts'],
-                routes: [
-                    './src/middlewares/routes.ts',
-                    './src/middlewares/bodyParser.ts',
-                    './src/routes'
-                ],
-                winston: [
-                    './src/middlewares/log.ts',
-                    './src/middlewares/errorLog.ts'
-                ],
-                unitTest: ['./src/test']
-            };
-            let configFiles: string[] = [];
-            Object.keys((fileMap as {[key: string]: string[]})).forEach(key => {
-                configFiles = configFiles.concat(fileMap[key]);
+            loadingDownload.succeed('下载完成');
+        }
+        catch(err) {
+            loadingDownload.fail('模板下载失败');
+        }
+        // const fileMap = (await import(resolve(saveAsPath, './packages/template/fileMap.js'))).default;
+        const fileMap: {[key: string]: string[]} = {
+            axios: ['./src/utils/http.ts'],
+            routes: [
+                './src/middlewares/routes.ts',
+                './src/middlewares/bodyParser.ts',
+                './src/routes'
+            ],
+            winston: [
+                './src/middlewares/log.ts',
+                './src/middlewares/errorLog.ts'
+            ],
+            unitTest: ['./src/test']
+        };
+        let configFiles: string[] = [];
+        Object.keys((fileMap as {[key: string]: string[]})).forEach(key => {
+            configFiles = configFiles.concat(fileMap[key]);
+        });
+        const templatePath = resolve(saveAsPath, './packages/template');
+        const files = readDir(templatePath);
+        let copyFiles = files;
+        if (!answers.isDefaultConfig) {
+            const configs: string[] = answers.configs || [];
+            let _files: string[] = [];
+            configs.forEach(config => {
+                _files = _files.concat(fileMap[config]);
             });
-            const files = readDir(resolve(saveAsPath, './packages/template'));
-            let copyFiles = files;
-            if (!answers.isDefaultConfig) {
-                const configs: string[] = answers.configs || [];
-                let _files: string[] = [];
-                configs.forEach(config => {
-                    _files = _files.concat(fileMap[config]);
-                });
-                copyFiles = files.filter(file => {
-                    for (let configFile of configFiles) {
-                        let _configFile = resolve(saveAsPath, configFile);
-                        if (file === _configFile) {
-                            return _files.includes(configFile);
-                        }
+            copyFiles = files.filter(file => {
+                for (let configFile of configFiles) {
+                    let _configFile = resolve(templatePath, configFile);
+                    if (file === _configFile) {
+                        return _files.includes(configFile);
                     }
-                    return true;
-                });
-            }
+                }
+                return true;
+            });
+        }
+        const loadingRender = ora('正在编译模板').start();
+        try {
             await Promise.all(copyFiles.map(file => {
                 return new Promise((resolve, reject) => {
                     (renderFile as any)(file, {
@@ -95,11 +104,17 @@ export default async (projectName: string) => {
                         }, reject);
                 });
             }));
-            exec(`rm -rf ${downloadPath}`);
-            console.log(chalk.green('⚙ 项目创建成功'));
+            loadingRender.succeed('模板编译成功');
+            const loadingPackages = ora('正在安装依赖').start();
+            exec(`rm -rf ${downloadPath} && cd ${projectName} && yarn`);
+            loadingPackages.succeed('安装依赖成功');
+            console.log(chalk.green('执行以下命令启动项目'));
+            console.log(chalk.green(`cd ${projectName} && yarn dev`));
+            exec('yarn dev');
         }
         catch(err) {
-            console.log(err);
+            loadingRender.fail('模板编译失败');
+            console.error(err);
         }
     }
 };
