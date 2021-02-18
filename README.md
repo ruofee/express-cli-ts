@@ -2,19 +2,23 @@
 
 ## 🍁 介绍
 
-🚀 一款用于提升工程效能的脚手架, 快速生成typescript + express项目
+一款提升工程效能的Nodejs脚手架, 快速生成typescript + express项目
 
-## 💪 如何使用
+## 🧨 如何使用
 
-命令行中执行以下命令:
+全局安装`express-cli-ts`:
 
 ```cmd
 # use yarn
 yarn global add express-cli-ts
-express@cli init your_project
 # use npm
 npm i express-cli-ts --global
-express@cli init your_project
+```
+
+创建项目:
+
+```cmd
+express@cli init <your_project>
 ```
 
 ## 🚲 脚手架集成
