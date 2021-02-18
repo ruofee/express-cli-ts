@@ -5,6 +5,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import {isFileExist, download, readDir, writeFileRecursive} from './utils';
 import {exec} from 'child_process';
+import {readFileSync} from 'fs';
 
 const answer = (projectName: string) => {
     return inquirer.prompt([
@@ -53,26 +54,17 @@ export default async (projectName: string) => {
         catch(err) {
             loadingDownload.fail('模板下载失败');
         }
-        // const fileMap = (await import(resolve(saveAsPath, './packages/template/fileMap.js'))).default;
-        const fileMap: {[key: string]: string[]} = {
-            axios: ['./src/utils/http.ts'],
-            routes: [
-                './src/middlewares/routes.ts',
-                './src/middlewares/bodyParser.ts',
-                './src/routes'
-            ],
-            winston: [
-                './src/middlewares/log.ts',
-                './src/middlewares/errorLog.ts'
-            ],
-            unitTest: ['./src/test']
-        };
+        let fileMap: {[key: string]: string} = {};
+        try {
+            fileMap = JSON.parse(readFileSync(resolve(saveAsPath, './packages/template/fileMap.json'), 'utf-8'));
+        }
+        catch(err) {}
         let configFiles: string[] = [];
-        Object.keys((fileMap as {[key: string]: string[]})).forEach(key => {
+        Object.keys(fileMap).forEach(key => {
             configFiles = configFiles.concat(fileMap[key]);
         });
         const templatePath = resolve(saveAsPath, './packages/template');
-        const files = readDir(templatePath);
+        const files = readDir(templatePath, ['fileMap.json']);
         let copyFiles = files;
         if (!answers.isDefaultConfig) {
             const configs: string[] = answers.configs || [];
