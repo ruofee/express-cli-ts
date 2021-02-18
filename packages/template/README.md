@@ -10,3 +10,21 @@
 - 网络库(axios)
 - 单元测试(mocha + chai)
 - 路由
+
+## 🧨 开启服务
+
+```cmd
+# use yarn
+yarn dev
+# use npm
+npm run dev
+```
+
+## 🤗 打包
+
+```cmd
+# use yarn
+yarn build
+# use npm
+npm run build
+```
