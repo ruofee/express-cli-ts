@@ -1,6 +1,6 @@
 {
   "name": "express-cli-ts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./bin/cli.ts",
   "license": "MIT",
   "description": "一款用于提升工程效能的脚手架, 快速生成typescript + express项目",
@@ -21,7 +21,6 @@
     "nodejs",
     "express-cli-ts"
   ],
-  "typings": "./typings/global.d.ts",
   "bin": {
     "express@cli": "./lib/cli.js"
   },
