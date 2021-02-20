@@ -13,7 +13,7 @@
 
 ## 🧨 开启服务
 
-```cmd
+```bash
 # use yarn
 yarn dev
 # use npm
@@ -22,7 +22,7 @@ npm run dev
 
 ## 🤗 打包
 
-```cmd
+```bash
 # use yarn
 yarn build
 # use npm

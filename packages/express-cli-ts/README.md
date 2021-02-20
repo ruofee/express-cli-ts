@@ -8,7 +8,7 @@
 
 全局安装`express-cli-ts`:
 
-```cmd
+```bash
 # use yarn
 yarn global add express-cli-ts
 # use npm
@@ -17,7 +17,7 @@ npm i express-cli-ts --global
 
 创建项目:
 
-```cmd
+```bash
 express@cli init <your_project>
 ```
 
