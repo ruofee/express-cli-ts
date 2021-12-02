@@ -11,8 +11,8 @@ export const readDir = (dirname: string, dirPath: string, result: string[] = [])
     try {
         dir = readdirSync(_dirPath)
     }
-    catch(err) {
-        console.error(err.message);
+    catch(err: any) {
+        console.error(err?.message || err);
     }
     dir.forEach(filename => {
         const _filename = resolve(_dirPath, filename);
