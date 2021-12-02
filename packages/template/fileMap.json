@@ -5,7 +5,7 @@
         "./src/middlewares/bodyParser.ts",
         "./src/routes"
     ],
-    "winston": [
+    "log": [
         "./src/middlewares/log.ts",
         "./src/middlewares/errorLog.ts"
     ],
