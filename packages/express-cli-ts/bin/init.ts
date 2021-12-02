@@ -3,9 +3,10 @@ import chalk from 'chalk';
 import {resolve} from 'path';
 import inquirer from 'inquirer';
 import ora from 'ora';
-import {isFileExist, download, readDir, writeFileRecursive} from './utils';
-import {exec} from 'child_process';
+import {isFileExist, downloadTemplate, readDir, writeFileRecursive, execPromise, tryCatch} from './utils';
 import {readFileSync} from 'fs';
+
+const DEFAULT_OPTIONS = { dev: false };
 
 const answer = (projectName: string) => {
     return inquirer.prompt([
@@ -30,42 +31,53 @@ const answer = (projectName: string) => {
             choices: [
                 {name: '网络请求库(axios)', value: 'axios'},
                 {name: '路由(Express.Router)', value: 'routes'},
-                {name: '日志(winston)', value: 'winston'},
+                {name: '日志(winston)', value: 'log'},
                 {name: '单元测试(mocha + chai)', value: 'unitTest'},
             ]
         },
     ]);
 };
 
-export default async (projectName: string) => {
+export default async (projectName: string, { dev } = DEFAULT_OPTIONS) => {
     const path = process.cwd();
+
     if (isFileExist(path, projectName)) {
         console.log(chalk.red(`🥊 文件夹(${projectName})已经存在`));
     }
     else {
         const answers = await answer(projectName);
-        const downloadPath = './express-cli-ts-template';
-        const saveAsPath = resolve(process.cwd(), downloadPath);
+        const saveAsPath = resolve(process.cwd(), './express-cli-ts-template');
         const loadingDownload = ora('正在下载模板').start();
-        try {
-            await download('ruofee/express-cli-ts#main', saveAsPath);
+
+        await tryCatch(async () => {
+            if (dev) {
+                const templatePath = resolve(process.cwd(), '../template');
+                await execPromise(`cp -r ${templatePath} ${saveAsPath}`);
+            }
+            else {
+                await downloadTemplate('ruofee/express-cli-ts#main', saveAsPath, process.cwd());
+            }
+
             loadingDownload.succeed('下载完成');
-        }
-        catch(err) {
+        }, () => {
             loadingDownload.fail('模板下载失败');
-        }
+        })();
+
         let fileMap: {[key: string]: string} = {};
-        try {
-            fileMap = JSON.parse(readFileSync(resolve(saveAsPath, './packages/template/fileMap.json'), 'utf-8'));
-        }
-        catch(err) {}
+
+        await tryCatch(() => {
+            fileMap = JSON.parse(readFileSync(resolve(saveAsPath, './fileMap.json'), 'utf-8'));
+        })();
+
         let configFiles: string[] = [];
+
         Object.keys(fileMap).forEach(key => {
             configFiles = configFiles.concat(fileMap[key]);
         });
-        const templatePath = resolve(saveAsPath, './packages/template');
-        const files = readDir(templatePath, ['fileMap.json']);
+
+        const files = readDir(saveAsPath, ['fileMap.json']);
         let copyFiles = files;
+
         if (!answers.isDefaultConfig) {
             const configs: string[] = answers.configs || [];
             let _files: string[] = [];
@@ -74,39 +86,44 @@ export default async (projectName: string) => {
             });
             copyFiles = files.filter(file => {
                 for (let configFile of configFiles) {
-                    let _configFile = resolve(templatePath, configFile);
-                    if (file === _configFile) {
+                    const _configFile = resolve(saveAsPath, configFile);
+                    const reg = new RegExp('^' + _configFile);
+                    if (reg.test(file)) {
                         return _files.includes(configFile);
                     }
                 }
                 return true;
             });
         }
+
         const loadingRender = ora('正在编译模板').start();
-        try {
+
+        await tryCatch(async () => {
             await Promise.all(copyFiles.map(file => {
-                return new Promise((resolve, reject) => {
-                    (renderFile as any)(file, {
-                        ...answers,
-                        configs: answers.configs || []
-                    })
-                        .then((data: string) => {
-                            const filename = file.replace(new RegExp('express-cli-ts-template/packages/template'), projectName);
-                            writeFileRecursive(filename, data).then(resolve, reject);
-                        }, reject);
+                return new Promise(async (res, rej) => {
+                    await tryCatch(async () => {
+                        const data = await (renderFile as any)(file, {
+                            ...answers,
+                            configs: answers.configs || []
+                        });
+                        const filename = file.replace(new RegExp('express-cli-ts-template'), projectName);
+                        await writeFileRecursive(filename, data);
+                        res(true);
+                    }, rej)();
                 });
             }));
+
             loadingRender.succeed('模板编译成功');
             const loadingPackages = ora('正在安装依赖').start();
-            exec(`rm -rf ${downloadPath} && cd ${projectName} && yarn`);
+
+            await execPromise(dev ? `rm -rf ${saveAsPath} && cd ${projectName}` : `rm -rf ${saveAsPath} && cd ${projectName} && yarn`);
+
             loadingPackages.succeed('安装依赖成功');
             console.log(chalk.green('执行以下命令启动项目'));
             console.log(chalk.green(`cd ${projectName} && yarn dev`));
-            exec('yarn dev');
-        }
-        catch(err) {
+        }, err => {
             loadingRender.fail('模板编译失败');
             console.error(err);
-        }
+        })();
     }
 };

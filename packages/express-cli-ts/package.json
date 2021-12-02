@@ -23,10 +23,12 @@
   ],
   "bin": {
     "express-cli-ts": "./lib/cli.js",
-    "express@cli": "./lib/cli.js"
+    "express-cli": "./lib/cli.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "init-dev": "ts-node bin/cli.ts init test-project",
+    "dev": "ts-node bin/cli.ts dev test-project"
   },
   "dependencies": {
     "chalk": "^4.1.0",

@@ -1,6 +1,8 @@
 import {readdirSync, lstatSync, statSync, mkdir, writeFile} from 'fs';
 import {resolve} from 'path';
+import {exec} from 'child_process';
 import downloadGitRepo from 'download-git-repo';
+import chalk from 'chalk';
 
 export const readDir = (path: string, ignoreFiles?: string[]): string[] => {
     let result: string[] = [];
@@ -15,7 +17,7 @@ export const readDir = (path: string, ignoreFiles?: string[]): string[] => {
             });
         }
         catch(err) {
-            console.error(err.message);
+            console.error((err as Error).message || err);
         }
     }
     else {
@@ -35,18 +37,26 @@ export const isFileExist = (path: string, file: string): boolean => {
     return false;
 };
 
-export const download = (path: string, saveAsPath: string) => {
+export const downloadTemplate = (path: string, saveAsPath: string, dirPath: string) => {
     return new Promise((res, rej) => {
         downloadGitRepo(path, saveAsPath, {clone: false}, (err: Error) => {
             if (err) {
                 return rej(err);
             }
-            res(saveAsPath);
+
+            const templatePath = resolve(saveAsPath, './packages/template');
+            const cachePath = resolve(dirPath, './cache_template');
+
+            tryCatch(async () => {
+                await execPromise(`cp -rf ${templatePath} ${cachePath}`);
+                await execPromise(`rm -rf ${saveAsPath} && mv ${cachePath} ${saveAsPath}`);
+                res(saveAsPath);
+            }, rej)();
         });
     });
 };
 
-export const writeFileRecursive = (filename: string, data: any) => {
+export const writeFileRecursive = (filename: string, data: string) => {
     return new Promise((res, rej) => {
         const dirPath = filename.substring(0, filename.lastIndexOf('/'));
         mkdir(dirPath, {recursive: true}, err => {
@@ -65,4 +75,29 @@ export const writeFileRecursive = (filename: string, data: any) => {
             }
         });
     });
+};
+
+export const execPromise = (bash: string): Promise<string> => {
+    console.log(`\n${chalk.blue(bash)}`);
+    return new Promise((res, rej) => {
+        exec(bash, (err, stdout) => {
+            if (err) {
+                rej(err);
+            }
+            else {
+                res(stdout);
+            }
+        });
+    });
+}
+
+export const tryCatch = (fn: (...params: unknown[]) => unknown, errorCallback?: (err: unknown) => void) => {
+    return async (...args: unknown[]) => {
+        try {
+            return await fn(args);
+        }
+        catch(err) {
+            errorCallback && errorCallback(err);
+        }
+    };
 };

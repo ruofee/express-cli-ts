@@ -11,7 +11,7 @@ program
     .usage('<command> [项目名称]')
     .command('init <project_name>')
     .description('创建新项目')
-    .action((project_name) => {
+    .action(project_name => {
         if (!project_name) {
             console.log(chalk.red('🥊 请使用正确格式: express@cli init <project_name>'));
             program.help(); 
@@ -20,4 +20,17 @@ program
             init(project_name);
         }
     });
+
+    program.command('dev <project_name>')
+        .description('创建新项目(本地开发)')
+        .action(project_name => {
+            if (!project_name) {
+                console.log(chalk.red('🥊 请使用正确格式: express@cli dev <project_name>'));
+                program.help(); 
+            }
+            else {
+                init(project_name, { dev: true });
+            }
+        });
+
 program.parse(process.argv);
