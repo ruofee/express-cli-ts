@@ -8,6 +8,15 @@ import {readFileSync} from 'fs';
 
 const DEFAULT_OPTIONS = { dev: false };
 
+const choices = [
+    {name: '网络请求库(axios)', value: 'axios'},
+    {name: '路由(Express.Router)', value: 'routes'},
+    {name: '日志(winston)', value: 'log'},
+    {name: '单元测试(mocha + chai)', value: 'unitTest'}
+];
+
+const defaultChoices = choices.map(choice => choice.value);
+
 const answer = (projectName: string) => {
     return inquirer.prompt([
         {
@@ -28,12 +37,7 @@ const answer = (projectName: string) => {
             type: 'checkbox',
             name: 'configs',
             message: '选择需要的配置',
-            choices: [
-                {name: '网络请求库(axios)', value: 'axios'},
-                {name: '路由(Express.Router)', value: 'routes'},
-                {name: '日志(winston)', value: 'log'},
-                {name: '单元测试(mocha + chai)', value: 'unitTest'},
-            ]
+            choices
         },
     ]);
 };
@@ -104,7 +108,7 @@ export default async (projectName: string, { dev } = DEFAULT_OPTIONS) => {
                     await tryCatch(async () => {
                         const data = await (renderFile as any)(file, {
                             ...answers,
-                            configs: answers.configs || []
+                            configs: answers.isDefaultConfig ? defaultChoices : (answers.configs || [])
                         });
                         const filename = file.replace(new RegExp('express-cli-ts-template'), projectName);
                         await writeFileRecursive(filename, data);
