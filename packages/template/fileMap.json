@@ -9,5 +9,6 @@
         "./src/middlewares/log.ts",
         "./src/middlewares/errorLog.ts"
     ],
-    "unitTest": ["./src/test"]
+    "unitTest": ["./src/test"],
+    "static": ["./src/middlewares/staticServer.ts"]
 }

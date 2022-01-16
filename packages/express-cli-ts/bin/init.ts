@@ -12,7 +12,8 @@ const choices = [
     {name: '网络请求库(axios)', value: 'axios'},
     {name: '路由(Express.Router)', value: 'routes'},
     {name: '日志(winston)', value: 'log'},
-    {name: '单元测试(mocha + chai)', value: 'unitTest'}
+    {name: '单元测试(mocha + chai)', value: 'unitTest'},
+    {name: '静态文件服务器(Express.static)', value: 'static'}
 ];
 
 const defaultChoices = choices.map(choice => choice.value);

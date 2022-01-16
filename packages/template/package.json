@@ -6,7 +6,8 @@
   "license": "MIT",
   "config": {
     "port": 3000,
-    "prefix": "/api"
+    "prefix": "/api",
+    "static": "./static"
   },
   "scripts": {
     "dev": "NODE_ENV=development nodemon ./src/main.ts",
