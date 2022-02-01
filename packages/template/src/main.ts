@@ -3,6 +3,7 @@
  */
 
 import express from 'express';
+import './plugins';
 import listen from './middlewares/listen';<% if (configs.includes('routes')) { %>
 import routes from './middlewares/routes';
 import bodyParser from './middlewares/bodyParser';<% } %><% if (configs.includes('log')) { %>

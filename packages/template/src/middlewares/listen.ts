@@ -3,6 +3,8 @@
  */
 
 import {Express} from 'express';
+import context from '../plugins/context';
+import pluginNames from '../plugins/pluginNames';
 import getArgs from '../utils/getArgs';
 
 const DEFAULT_PORT = 3000;
@@ -17,9 +19,10 @@ let port = args.port
         : DEFAULT_PORT;
 
 export default (app: Express) => {
+    context.emit(pluginNames.beforeStart);
     const server = app.listen(port);
-
     server.on('listening', () => {
+        context.emit(pluginNames.start);
         const url = process.env.NODE_ENV === 'development' ? 'http://localhost' : 'http://ruofee.cn';
         console.log(`🚀 服务已开启~\n🌏 服务地址为: ${url}:${port}`);
     });
